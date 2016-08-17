@@ -27,7 +27,7 @@ if ~exist('channel','var') || isempty(channel)
 end
 
 if ~exist('method','var') || isempty(method)
-    channel = 'yz';
+    method = 'yz';
 end
 
 %% Load images

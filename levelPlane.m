@@ -11,18 +11,25 @@ function [ Rmat ] = levelPlane( im )
 
 %Get brightest points- *should* lie in mucin plane?
 
-[~, maxInt] = max(im(:,:,10,:,1),[],4);
+[~, maxInt] = max(im,[],4);
+maxInt = squeeze(maxInt(:,:,:,:,1));
+
+lev = mean(maxInt);
+[~, maxIntRest] = max(im(:,:,:,max([1,floor(lev-10)]):min([ceil(lev+10),size(im,4)]),1),[],4);
+maxIntRest = squeeze(maxIntRest(:,:,:,:,1));
 
 %Reshape for fitting and construct x-y coordinate arrays
 
-[xinds, yinds] = ind2sub([size(maxInt,1), size(maxInt,2)],1:numel(maxInt));
+[xinds, yinds] = ind2sub([size(maxIntRest,1), size(maxIntRest,2)],1:numel(maxIntRest));
+maxIntRest = reshape(maxIntRest,size(maxIntRest,1)*size(maxIntRest,2),1);
 maxInt = reshape(maxInt,size(maxInt,1)*size(maxInt,2),1);
-
 
 %Fit to plane
 
-sf = fit([xinds', yinds'],maxInt,'poly11')
-figure; plot(sf,[xinds(1:500:end)',yinds(1:500:end)'],maxInt(1:500:end)) %plot for sanity
+sf = fit([xinds', yinds'],maxIntRest,'poly11');
+% figure; plot(sf,[xinds(1:500:end)',yinds(1:500:end)'],maxIntRest(1:500:end)) %plot for sanity
+% hold on
+% plot(sf,[xinds(1:500:end)',yinds(1:500:end)'],maxInt(1:500:end))
 
 %Construct rotation matrix- see wikipedia article
 
@@ -46,9 +53,9 @@ for j = 1:500:numel(maxInt)
 Rpoints(j,:) = Rmat*[xinds(j);yinds(j);maxInt(j)];
 end
      
-sf2 = fit([Rpoints(:,1), Rpoints(:,2)],Rpoints(:,3),'poly11')
+sf2 = fit([Rpoints(:,1), Rpoints(:,2)],Rpoints(:,3),'poly11');
 
-     figure; plot(sf2,[Rpoints(:,1),Rpoints(:,2)],Rpoints(:,3));
+%      figure; plot(sf2,[Rpoints(:,1),Rpoints(:,2)],Rpoints(:,3));
 
      
      
