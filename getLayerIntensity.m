@@ -1,4 +1,4 @@
-function [ layerLum, intLum ] = getLayerIntensity( dataDir, channel, totFrames )
+function [ layerLum, intLum ] = getLayerIntensity( dataDir, channel, totFrames, rescale )
 %UNTITLED Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -10,6 +10,10 @@ end
 
 if ~exist('channel','var') || isempty(channel)
     channel = 1;
+end
+
+if ~exist('rescale','var') || isempty(rescale)
+    rescale = 1;
 end
 
 %% Load images
@@ -38,9 +42,11 @@ intLum = zeros(totFrames,zheight);
 
 %% calcs 
 
+h = waitbar(0,'Determining intensities...');
+
 for j = 1:totFrames
 
-im = loadZSeriesWithChannels( j, [], 1, 1);
+im = loadZSeriesWithChannels( j, [], 1, 1)*rescale;
 
 Rmat = levelPlane(im); %gets rotation matrix that will place cells on horizontal x-y plane
 
@@ -79,9 +85,14 @@ for k = 1:zheight
     intLum(j,k) = sum(b(1,b(2,:)==k)); %integrated intensity
 end
 
-j
+waitbar(j / totFrames)
 
 end
+close(h)
+
+intLum = sum(intLum,2);
+% dataOut(:,:,1) = layerLum;
+% dataOut(:,:,2) = intLum;
 
 end
 
